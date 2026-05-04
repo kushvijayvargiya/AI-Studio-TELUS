@@ -1,0 +1,131 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  
+  --color-telus-purple: #ffffff;
+  --color-telus-green: #ffffff;
+  --color-telus-gray: #ffffff;
+  --color-telus-light: #050505;
+  --color-telus-accent: rgba(255,255,255,0.1);
+
+  --color-bg-primary: #050505;
+  --color-bg-secondary: #0a0a0a;
+  --color-text-primary: #e0e0e0;
+  --color-text-secondary: #888888;
+  --color-border-primary: rgba(255,255,255,0.1);
+
+  --chart-grid: rgba(255,255,255,0.05);
+  --chart-text: #888888;
+  --chart-tooltip-bg: #0a0a0a;
+  --chart-tooltip-border: rgba(255,255,255,0.1);
+
+  --bg-telus-purple-10: rgba(255, 255, 255, 0.05);
+  --bg-telus-green-10: rgba(255, 255, 255, 0.05);
+}
+
+* {
+  border-color: var(--color-border-primary);
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+h1, h2, h3, .font-extrabold {
+  font-family: var(--font-serif);
+  font-weight: 400 !important;
+}
+
+/* Force dark mode for everything */
+.bg-white, .bg-slate-50, .bg-gray-50, .bg-neutral-50, .bg-slate-100, .bg-gray-100 {
+  background-color: var(--color-bg-secondary) !important;
+}
+.text-slate-900, .text-gray-900, .text-neutral-900, .text-slate-800, .text-gray-800 {
+  color: var(--color-text-primary) !important;
+}
+.text-slate-600, .text-gray-600, .text-neutral-600, .text-slate-500, .text-gray-500 {
+  color: var(--color-text-secondary) !important;
+}
+.text-telus-gray, .text-telus-purple, .text-telus-green {
+  color: #ffffff !important;
+}
+.bg-telus-purple\/10, .bg-telus-green\/10 {
+  background-color: rgba(255,255,255,0.05) !important;
+}
+
+.telus-card {
+  background-color: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 0 !important;
+}
+
+.telus-card-inner {
+  background-color: rgba(255, 255, 255, 0.02) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  border-radius: 0 !important;
+}
+
+/* Buttons */
+.telus-button-primary, .telus-button-secondary {
+  background-color: transparent !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 9999px !important;
+  padding: 8px 24px !important;
+  font-weight: 500 !important;
+  font-size: 0.625rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.1em !important;
+  transition: all 0.2s ease !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none !important;
+}
+
+.telus-button-primary:hover, .telus-button-secondary:hover {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.telus-badge, .inline-flex.rounded-full {
+  border-radius: 0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background-color: transparent !important;
+  color: #888888 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 0.625rem;
+  font-weight: 500;
+}
+
+/* Remove excessive rounded corners globally, except buttons */
+.rounded-xl, .rounded-2xl, .rounded-3xl, .rounded-lg, .rounded-md {
+  border-radius: 0 !important;
+}
+
+/* Specific nav classes */
+nav {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+/* Dark mode classes overrides to ensure they don't break the new theme */
+
+@media print {
+  body * { visibility: hidden; }
+  #invoice-printable-area, #invoice-printable-area * { visibility: visible; }
+  #invoice-printable-area {
+    position: absolute; left: 0; top: 0; width: 100%; padding: 20px; background: white;
+  }
+}
