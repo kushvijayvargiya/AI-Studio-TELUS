@@ -8,7 +8,7 @@ export default defineConfig(({mode}) => {
   return {
     plugins: [react(), tailwindcss()],
     define: {
-      'process.env.OPENAI_API_KEY': JSON.stringify(env.OPENAI_API_KEY),
+      'process.env.ANTHROPIC_API_KEY': JSON.stringify(env.ANTHROPIC_API_KEY),
     },
     resolve: {
       alias: {
