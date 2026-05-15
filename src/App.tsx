@@ -348,15 +348,18 @@ export default function App() {
             {activeCustomer ? (
               <button 
                 onClick={() => setActiveCustomer(null)}
-                className="flex items-center text-[10px] uppercase tracking-widest text-[#888] hover:text-white transition-colors group"
+                className="flex items-center text-xs font-black text-telus-purple hover:bg-telus-purple/10 transition-all bg-bg-secondary px-5 py-2.5 rounded-full border border-border-primary shadow-sm group"
               >
                 <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
-                DASHBOARD
+                BACK TO DASHBOARD
               </button>
             ) : (
               <div className="flex items-center space-x-3 cursor-pointer group" onClick={() => { setActiveCustomer(null); setActiveTab('dashboard'); }}>
+                <div className="relative flex items-center justify-center w-10 h-10 rounded-lg bg-telus-purple shadow-md group-hover:shadow-lg group-hover:-translate-y-0.5 transition-all duration-300">
+                  <Waypoints className="w-5 h-5 text-white" />
+                </div>
                 <div className="flex flex-col">
-                  <span className="text-2xl font-serif tracking-tighter text-white uppercase">AXON</span>
+                  <span className="font-extrabold text-xl tracking-tight text-telus-purple leading-none">AXON</span>
                 </div>
               </div>
             )}
@@ -370,13 +373,14 @@ export default function App() {
               <div className="relative group">
                 <button 
                   onClick={() => { setActiveCustomer(null); setActiveTab('dashboard'); }}
-                  className={`px-4 py-2 text-xs uppercase tracking-[0.2em] font-medium transition-all ${activeTab.startsWith('intelligence') || activeTab === 'dashboard' || activeTab === 'smart-insights' ? 'text-white opacity-100' : 'text-[#888] opacity-60 hover:opacity-100 flex items-center'}`}
+                  className={`px-6 py-2.5 rounded-full text-sm font-black transition-all duration-200 flex items-center ${activeTab.startsWith('intelligence') || activeTab === 'dashboard' || activeTab === 'smart-insights' ? 'text-telus-purple bg-telus-purple/10' : 'text-text-secondary hover:text-telus-purple hover:bg-bg-secondary'}`}
                 >
-                  Insights
+                  Insights <ChevronDown className="w-4 h-4 ml-1 group-hover:rotate-180 transition-transform" />
                 </button>
-                <div className="absolute top-full left-0 mt-2 w-64 bg-[#0a0a0a] border border-white/10 py-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[110]">
-                  <button onClick={() => { setActiveCustomer(null); setActiveTab('dashboard'); }} className="w-full text-left px-6 py-2 text-xs uppercase tracking-widest text-[#888] hover:text-white transition-colors">Dashboard</button>
-                  <button onClick={() => { setActiveCustomer(null); setActiveTab('smart-insights'); }} className="w-full text-left px-6 py-2 text-xs uppercase tracking-widest text-[#888] hover:text-white transition-colors flex items-center">
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 bg-bg-secondary/95 backdrop-blur-md rounded-2xl shadow-[0_20px_50px_rgba(75,40,109,0.15)] border border-border-primary py-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[110] translate-y-2 group-hover:translate-y-0">
+                  <button onClick={() => { setActiveCustomer(null); setActiveTab('dashboard'); }} className="w-full text-left px-6 py-3 text-sm font-black text-text-secondary hover:bg-bg-primary hover:text-telus-purple transition-colors">Dashboard</button>
+                  <button onClick={() => { setActiveCustomer(null); setActiveTab('smart-insights'); }} className="w-full text-left px-6 py-3 text-sm font-black text-text-secondary hover:bg-bg-primary hover:text-telus-purple transition-colors flex items-center">
+                    <Sparkles className="w-4 h-4 mr-2 text-telus-purple" />
                     Smart Insights
                   </button>
                   
@@ -384,14 +388,14 @@ export default function App() {
                   <div className="relative group/portfolio">
                     <button 
                       onClick={() => { setActiveCustomer(null); setActiveTab('intelligence-portfolio'); }}
-                      className="w-full text-left px-6 py-2 text-xs uppercase tracking-widest text-[#888] hover:text-white transition-colors flex items-center justify-between"
+                      className="w-full text-left px-6 py-3 text-sm font-black text-text-secondary hover:bg-bg-primary hover:text-telus-purple transition-colors flex items-center justify-between"
                     >
-                      Portfolio <ChevronRight className="w-4 h-4 ml-2" />
+                      Portfolio <ChevronRight className="w-4 h-4" />
                     </button>
-                    <div className="absolute left-full top-0 ml-0 w-48 bg-[#0a0a0a] border border-white/10 py-3 opacity-0 invisible group-hover/portfolio:opacity-100 group-hover/portfolio:visible transition-all z-[120]">
-                      <button onClick={() => { setActiveCustomer(null); setActiveTab('intelligence-portfolio'); }} className="w-full text-left px-6 py-2 text-xs uppercase tracking-widest text-[#888] hover:text-white transition-colors">Overview</button>
-                      <button onClick={() => { setActiveCustomer(null); setActiveTab('intelligence-marketing'); }} className="w-full text-left px-6 py-2 text-xs uppercase tracking-widest text-[#888] hover:text-white transition-colors">Marketing</button>
-                      <button onClick={() => { setActiveCustomer(null); setActiveTab('intelligence-analytics'); }} className="w-full text-left px-6 py-2 text-xs uppercase tracking-widest text-[#888] hover:text-white transition-colors">Intelligence</button>
+                    <div className="absolute left-full top-0 ml-2 w-48 bg-bg-secondary/95 backdrop-blur-md rounded-2xl shadow-[0_20px_50px_rgba(75,40,109,0.15)] border border-border-primary py-3 opacity-0 invisible group-hover/portfolio:opacity-100 group-hover/portfolio:visible transition-all z-[120] translate-x-2 group-hover/portfolio:translate-x-0">
+                      <button onClick={() => { setActiveCustomer(null); setActiveTab('intelligence-portfolio'); }} className="w-full text-left px-6 py-3 text-sm font-black text-text-secondary hover:bg-bg-primary hover:text-telus-purple transition-colors">Overview</button>
+                      <button onClick={() => { setActiveCustomer(null); setActiveTab('intelligence-marketing'); }} className="w-full text-left px-6 py-3 text-sm font-black text-text-secondary hover:bg-bg-primary hover:text-telus-purple transition-colors">Marketing Analytics</button>
+                      <button onClick={() => { setActiveCustomer(null); setActiveTab('intelligence-analytics'); }} className="w-full text-left px-6 py-3 text-sm font-black text-text-secondary hover:bg-bg-primary hover:text-telus-purple transition-colors">Product Intelligence</button>
                     </div>
                   </div>
                 </div>
@@ -399,25 +403,25 @@ export default function App() {
 
               {/* Analyze Dropdown */}
               <div className="relative group">
-                <button className={`px-4 py-2 text-xs uppercase tracking-[0.2em] font-medium transition-all ${activeTab === 'new' || activeTab === 'timeline' ? 'text-white opacity-100' : 'text-[#888] opacity-60 hover:opacity-100 flex items-center'}`}>
-                  Analyze
+                <button className={`px-6 py-2.5 rounded-full text-sm font-black transition-all duration-200 flex items-center ${activeTab === 'new' || activeTab === 'timeline' ? 'text-telus-purple bg-telus-purple/10' : 'text-text-secondary hover:text-telus-purple hover:bg-bg-secondary'}`}>
+                  Analyze <ChevronDown className="w-4 h-4 ml-1 group-hover:rotate-180 transition-transform" />
                 </button>
-                <div className="absolute top-full left-0 mt-2 w-64 bg-[#0a0a0a] border border-white/10 py-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[110]">
-                  <button onClick={() => { setActiveCustomer(null); setActiveTab('new'); }} className="w-full text-left px-6 py-2 text-xs uppercase tracking-widest text-[#888] hover:text-white transition-colors">New Analysis</button>
-                  <button onClick={() => { setActiveCustomer(null); setActiveTab('timeline'); }} className="w-full text-left px-6 py-2 text-xs uppercase tracking-widest text-[#888] hover:text-white transition-colors">Combined Timeline</button>
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 bg-bg-secondary/95 backdrop-blur-md rounded-2xl shadow-[0_20px_50px_rgba(75,40,109,0.15)] border border-border-primary py-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[110] translate-y-2 group-hover:translate-y-0">
+                  <button onClick={() => { setActiveCustomer(null); setActiveTab('new'); }} className="w-full text-left px-6 py-3 text-sm font-black text-text-secondary hover:bg-bg-primary hover:text-telus-purple transition-colors">New Analysis</button>
+                  <button onClick={() => { setActiveCustomer(null); setActiveTab('timeline'); }} className="w-full text-left px-6 py-3 text-sm font-black text-text-secondary hover:bg-bg-primary hover:text-telus-purple transition-colors">Combined Timeline</button>
                 </div>
               </div>
 
               {/* Manage Dropdown */}
               <div className="relative group">
-                <button className={`px-4 py-2 text-xs uppercase tracking-[0.2em] font-medium transition-all ${activeTab === 'billing' || activeTab === 'budget-vs-actuals' || activeTab === 'database' || activeTab === 'rules' ? 'text-white opacity-100' : 'text-[#888] opacity-60 hover:opacity-100 flex items-center'}`}>
-                  Manage
+                <button className={`px-6 py-2.5 rounded-full text-sm font-black transition-all duration-200 flex items-center ${activeTab === 'billing' || activeTab === 'budget-vs-actuals' || activeTab === 'database' ? 'text-telus-purple bg-telus-purple/10' : 'text-text-secondary hover:text-telus-purple hover:bg-bg-secondary'}`}>
+                  Manage <ChevronDown className="w-4 h-4 ml-1 group-hover:rotate-180 transition-transform" />
                 </button>
-                <div className="absolute top-full left-0 mt-2 w-64 bg-[#0a0a0a] border border-white/10 py-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[110]">
-                  <button onClick={() => { setActiveCustomer(null); setActiveTab('billing'); }} className="w-full text-left px-6 py-2 text-xs uppercase tracking-widest text-[#888] hover:text-white transition-colors">Billing</button>
-                  <button onClick={() => { setActiveCustomer(null); setActiveTab('budget-vs-actuals'); }} className="w-full text-left px-6 py-2 text-xs uppercase tracking-widest text-[#888] hover:text-white transition-colors">Budget vs Actuals</button>
-                  <button onClick={() => { setActiveCustomer(null); setActiveTab('database'); }} className="w-full text-left px-6 py-2 text-xs uppercase tracking-widest text-[#888] hover:text-white transition-colors">Database</button>
-                  <button onClick={() => { setActiveCustomer(null); setActiveTab('rules'); }} className="w-full text-left px-6 py-2 text-xs uppercase tracking-widest text-[#888] hover:text-white transition-colors border-t border-white/10 mt-1 pt-3">System Rules</button>
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 bg-bg-secondary/95 backdrop-blur-md rounded-2xl shadow-[0_20px_50px_rgba(75,40,109,0.15)] border border-border-primary py-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[110] translate-y-2 group-hover:translate-y-0">
+                  <button onClick={() => { setActiveCustomer(null); setActiveTab('billing'); }} className="w-full text-left px-6 py-3 text-sm font-black text-text-secondary hover:bg-bg-primary hover:text-telus-purple transition-colors">Billing</button>
+                  <button onClick={() => { setActiveCustomer(null); setActiveTab('budget-vs-actuals'); }} className="w-full text-left px-6 py-3 text-sm font-black text-text-secondary hover:bg-bg-primary hover:text-telus-purple transition-colors">Budget vs Actuals</button>
+                  <button onClick={() => { setActiveCustomer(null); setActiveTab('database'); }} className="w-full text-left px-6 py-3 text-sm font-black text-text-secondary hover:bg-bg-primary hover:text-telus-purple transition-colors">Database</button>
+                  <button onClick={() => { setActiveCustomer(null); setActiveTab('rules'); }} className="w-full text-left px-6 py-3 text-sm font-black text-text-secondary hover:bg-bg-primary hover:text-telus-purple transition-colors border-t border-border-primary/50 mt-2 pt-4">System Rules</button>
                 </div>
               </div>
             </div>
@@ -443,16 +447,16 @@ export default function App() {
 
             {/* Settings Dropdown */}
             <div className="relative group/settings">
-              <div className="hidden sm:flex items-center justify-center w-8 h-8 border border-white/20 text-white text-[10px] uppercase hover:bg-white/10 transition-colors shadow-none rounded-none cursor-pointer">
+              <div className="hidden sm:flex items-center justify-center w-10 h-10 rounded-full border border-border-primary bg-bg-secondary text-telus-purple font-bold text-sm cursor-pointer hover:border-telus-purple transition-colors shadow-sm">
                 KV
               </div>
-              <div className="absolute top-full right-0 mt-2 w-48 bg-[#0a0a0a] border border-white/10 py-2 opacity-0 invisible group-hover/settings:opacity-100 group-hover/settings:visible transition-all z-[130]">
+              <div className="absolute top-full right-0 mt-2 w-48 bg-bg-secondary/95 backdrop-blur-md rounded-2xl shadow-[0_20px_50px_rgba(75,40,109,0.15)] border border-border-primary py-2 opacity-0 invisible group-hover/settings:opacity-100 group-hover/settings:visible transition-all z-[130] translate-y-2 group-hover/settings:translate-y-0 overflow-hidden">
                 {/* Privacy Mode */}
                 <button 
                   onClick={togglePrivacyMode}
-                  className="w-full text-left px-6 py-2 text-[10px] uppercase tracking-widest text-[#888] hover:text-white flex items-center justify-between"
+                  className="w-full text-left px-4 py-2 text-[10px] font-bold text-text-secondary hover:bg-bg-primary hover:text-telus-purple flex items-center justify-between"
                 >
-                  Privacy {isPrivacyMode ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
+                  Privacy Mode {isPrivacyMode ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
                 </button>
                 
                 {/* Dark Mode */}
@@ -461,21 +465,21 @@ export default function App() {
                     const isDark = document.documentElement.classList.toggle('dark');
                     localStorage.setItem('axon_dark_mode', isDark ? 'true' : 'false');
                   }}
-                  className="w-full text-left px-6 py-2 text-[10px] uppercase tracking-widest text-[#888] hover:text-white flex items-center justify-between"
+                  className="w-full text-left px-4 py-2 text-[10px] font-bold text-text-secondary hover:bg-bg-primary hover:text-telus-purple flex items-center justify-between"
                 >
-                  Dark Mode <span className="w-3 h-3 bg-white"></span>
+                  Dark Mode <span className="w-3 h-3 rounded-full bg-slate-800"></span>
                 </button>
 
                 {/* Role Switcher */}
-                <div className="border-t border-white/10 my-2"></div>
-                <p className="px-6 py-1 text-[9px] text-[#888] uppercase tracking-widest opacity-60">Role</p>
+                <div className="border-t border-[#4B286D1A] my-1"></div>
+                <p className="px-4 py-1 text-[9px] font-black text-[#2A2C2E66] uppercase tracking-widest">Role</p>
                 {(['ADMIN', 'EDITOR', 'VIEWER'] as UserRole[]).map(role => (
                   <button 
                     key={role}
                     onClick={() => setUserRole(role)}
                     className={cn(
-                      "w-full text-left px-6 py-2 text-[10px] uppercase tracking-widest transition-colors",
-                      userRole === role ? "text-white bg-white/5" : "text-[#888] hover:text-white hover:bg-white/5"
+                      "w-full text-left px-4 py-2 text-[10px] font-bold transition-colors",
+                      userRole === role ? "text-telus-purple bg-[#4B286D0D]" : "text-slate-500 hover:bg-slate-50"
                     )}
                   >
                     {role}
@@ -530,15 +534,15 @@ export default function App() {
           <div className="space-y-16 animate-in fade-in duration-700">
             {/* Header */}
             <div className="text-center max-w-4xl mx-auto pt-8 flex flex-col items-center">
-              <div className="mb-6 text-[#888] uppercase tracking-[0.3em] text-[10px] font-semibold flex items-center justify-center">
-                <Sparkles className="w-3 h-3 mr-2 opacity-60" />
+              <div className="mb-6 text-telus-purple uppercase tracking-[0.2em] text-xs font-bold leading-tight flex items-center justify-center bg-telus-purple/10 px-4 py-1.5 rounded-full border border-telus-purple/20">
+                <Sparkles className="w-3.5 h-3.5 mr-2 text-telus-purple" />
                 AI-Powered Contract Intelligence
               </div>
-              <h1 className="text-[56px] sm:text-[84px] leading-[0.9] font-serif italic text-[#e0e0e0] mb-8">
-                Analyze & Manage <br/><span className="not-italic opacity-90">Your Contracts.</span>
+              <h1 className="text-5xl sm:text-7xl font-extrabold tracking-tight text-telus-gray mb-8 leading-tight">
+                Analyze & Manage <br/><span className="text-telus-purple">Your Contracts</span>
               </h1>
-              <p className="max-w-md text-lg text-white/50 leading-relaxed font-light mx-auto">
-                Transform complex Statements of Work (SOW) and Change Orders into actionable insights with our advanced AI engine.
+              <p className="max-w-2xl text-xl text-text-secondary leading-relaxed mx-auto">
+                Transform complex Statements of Work (SOW) and Change Orders into actionable insights with our Advanced eXtraction of Obligations and Negotiations (AXON) engine.
               </p>
             </div>
 
@@ -744,56 +748,53 @@ export default function App() {
                   
                   {savedCustomers.length > 0 && (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                      <div className="p-8 flex flex-col border border-white/10 bg-[#0a0a0a]">
-                        <div className="mb-4 text-white/40">
-                          <Database className="w-5 h-5" />
+                      <div className="telus-card p-8 flex items-center space-x-6">
+                        <div className="p-4 bg-bg-primary rounded-2xl text-telus-purple border border-border-primary">
+                          <Database className="w-8 h-8" />
                         </div>
-                        <div className="space-y-1">
-                          <p className="text-[10px] uppercase tracking-widest text-[#888]">Total Customers</p>
-                          <p className="text-2xl font-serif text-white">{savedCustomers.length}</p>
-                        </div>
-                      </div>
-                      <div className="p-8 flex flex-col border border-white/10 bg-[#0a0a0a]">
-                        <div className="mb-4 text-white/40">
-                          <FileText className="w-5 h-5" />
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-[10px] uppercase tracking-widest text-[#888]">Documents Processed</p>
-                          <p className="text-2xl font-serif text-white">{totalDocuments}</p>
+                        <div>
+                          <p className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-1">Total Customers</p>
+                          <p className="text-4xl font-black text-text-primary">{savedCustomers.length}</p>
                         </div>
                       </div>
-                      <div className="p-8 flex flex-col border border-white/10 bg-[#0a0a0a]">
-                        <div className="mb-4 text-white/40">
-                          <TrendingUp className="w-5 h-5" />
+                      <div className="telus-card p-8 flex items-center space-x-6">
+                        <div className="p-4 bg-bg-primary rounded-2xl text-telus-green border border-border-primary">
+                          <FileText className="w-8 h-8" />
                         </div>
-                        <div className="space-y-1">
-                          <p className="text-[10px] uppercase tracking-widest text-[#888]">Current Month's Revenue</p>
-                          <p className="text-2xl font-serif text-white">{new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(currentMonthRevenue)}</p>
+                        <div>
+                          <p className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-1">Documents Processed</p>
+                          <p className="text-4xl font-black text-text-primary">{totalDocuments}</p>
+                        </div>
+                      </div>
+                      <div className="telus-card p-8 flex items-center space-x-6">
+                        <div className="p-4 bg-bg-primary rounded-2xl text-telus-purple border border-border-primary">
+                          <TrendingUp className="w-8 h-8" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-1">Current Month's Revenue</p>
+                          <p className="text-4xl font-black text-text-primary">{new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(currentMonthRevenue)}</p>
                         </div>
                       </div>
                     </div>
                   )}
 
                   {savedCustomers.length === 0 ? (
-                    <div className="relative w-full max-w-3xl mx-auto py-24 px-6 bg-[#0a0a0a] border border-white/10 overflow-hidden group">
-                      <div className="absolute inset-0 bg-gradient-to-tr from-black/60 to-transparent z-10 pointer-events-none"></div>
-                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-white/5 rounded-full blur-3xl pointer-events-none"></div>
-                      
-                      <div className="relative z-20 flex flex-col items-center">
-                        <div className="w-16 h-16 border border-white/10 flex items-center justify-center mx-auto mb-10 text-white/50 bg-[#050505]">
-                          <Waypoints className="w-6 h-6" />
-                        </div>
-                        <h3 className="text-3xl font-serif italic text-white mb-6">Welcome to Contract Intelligence</h3>
-                        <p className="max-w-md text-sm text-white/50 leading-relaxed font-light mb-12">
-                          Your intelligent contract analysis hub. Upload your first ZIP file containing Statements of Work, Change Orders, and Deliverable Approval Forms to get started.
-                        </p>
-                        <button 
-                          onClick={() => setActiveTab('new')}
-                          className="telus-button-primary relative z-10"
-                        >
-                          Upload First Contract
-                        </button>
+                    <div className="text-center py-32 px-6 bg-bg-secondary rounded-[32px] shadow-[0_10px_40px_rgba(75,40,109,0.05)] relative overflow-hidden">
+                      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-80 bg-telus-purple/5 blur-[120px] rounded-full pointer-events-none"></div>
+                      <div className="w-24 h-24 bg-bg-secondary rounded-3xl shadow-xl border border-border-primary flex items-center justify-center mx-auto mb-10 relative z-10 rotate-3 hover:rotate-6 transition-transform duration-500">
+                        <Waypoints className="w-12 h-12 text-telus-purple" />
                       </div>
+                      <h3 className="text-4xl font-black text-telus-gray tracking-tight mb-6 relative z-10">Welcome to Contract Intelligence</h3>
+                      <p className="text-xl text-slate-500 mb-12 max-w-2xl mx-auto relative z-10 leading-relaxed">
+                        Your intelligent contract analysis hub. Upload your first ZIP file containing Statements of Work, Change Orders, and Deliverable Approval Forms to get started.
+                      </p>
+                      <button 
+                        onClick={() => setActiveTab('new')}
+                        className="telus-button-primary relative z-10 px-10 py-4 text-base"
+                      >
+                        <HardDrive className="w-5 h-5 mr-3" />
+                        Upload First Contract
+                      </button>
                     </div>
                   ) : (
                     <div className="telus-card p-10 h-full flex flex-col">
