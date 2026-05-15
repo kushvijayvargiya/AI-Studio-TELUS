@@ -27,6 +27,7 @@ import { SmartDashboard } from './components/SmartDashboard';
 import { WatchFolder } from './components/WatchFolder';
 import { RulesInfo } from './components/RulesInfo';
 
+import { TelusLogo } from './components/TelusLogo';
 import { SkeletonCard } from './components/ui/Skeleton';
 import { saveAuditLog } from './lib/db';
 
@@ -355,8 +356,8 @@ export default function App() {
               </button>
             ) : (
               <div className="flex items-center space-x-3 cursor-pointer group" onClick={() => { setActiveCustomer(null); setActiveTab('dashboard'); }}>
-                <div className="relative flex items-center justify-center w-12 h-12 rounded-xl bg-white shadow-sm ring-1 ring-border-primary group-hover:shadow-md group-hover:-translate-y-0.5 transition-all duration-300 overflow-hidden">
-                  <img src="/telus-logo.png" alt="TELUS" className="w-full h-full object-contain p-1" />
+                <div className="relative flex items-center justify-center w-12 h-12 rounded-xl bg-white shadow-sm ring-1 ring-border-primary group-hover:shadow-md group-hover:-translate-y-0.5 transition-all duration-300">
+                  <TelusLogo size="md" />
                 </div>
                 <div className="flex flex-col">
                   <span className="font-extrabold text-xl tracking-tight text-telus-purple leading-none">AXON</span>
@@ -782,7 +783,7 @@ export default function App() {
                     <div className="text-center py-32 px-6 bg-bg-secondary rounded-[32px] shadow-[0_10px_40px_rgba(75,40,109,0.05)] relative overflow-hidden">
                       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-80 bg-telus-purple/5 blur-[120px] rounded-full pointer-events-none"></div>
                       <div className="w-32 h-32 bg-white rounded-[40px] shadow-2xl border border-border-primary flex items-center justify-center mx-auto mb-10 relative z-10 rotate-3 hover:rotate-6 transition-all duration-500 overflow-hidden">
-                        <img src="/telus-logo.png" alt="TELUS" className="w-full h-full object-contain p-4" />
+                        <TelusLogo size="lg" />
                       </div>
                       <h3 className="text-4xl font-black text-telus-gray tracking-tight mb-6 relative z-10">Welcome to Contract Intelligence</h3>
                       <p className="text-xl text-slate-500 mb-12 max-w-2xl mx-auto relative z-10 leading-relaxed">
