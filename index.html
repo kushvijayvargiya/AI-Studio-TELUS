@@ -5,6 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AXON Intelligence Suite</title>
     <link rel="icon" type="image/png" href="https://www.telus.com/favicon.ico" />
+    <script>
+      (function() {
+        if (window.opener && window.location.hash) {
+          const hashStr = window.location.hash.substring(1);
+          const params = new URLSearchParams(hashStr);
+          const accessToken = params.get('access_token');
+          const state = params.get('state');
+          if (accessToken && state === 'google_drive_oauth') {
+            try {
+              window.opener.postMessage({
+                type: 'GOOGLE_DRIVE_TOKEN',
+                accessToken: accessToken
+              }, window.location.origin);
+              window.close();
+            } catch (e) {
+              console.error('Failed to send OAuth token to opener:', e);
+            }
+          }
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

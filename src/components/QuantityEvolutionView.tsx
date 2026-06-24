@@ -164,9 +164,10 @@ export const QuantityEvolutionView: React.FC<QuantityEvolutionViewProps> = ({ re
       if (!showOneTimeCosts) {
         services = services.filter(s => {
           const type = s.serviceType?.toUpperCase();
+          const sName = (s.serviceName || '').toLowerCase();
           return type !== 'PS' && type !== 'TS' && 
-                 !s.serviceName.toLowerCase().includes('professional') && 
-                 !s.serviceName.toLowerCase().includes('transition');
+                 !sName.includes('professional') && 
+                 !sName.includes('transition');
         });
       }
 

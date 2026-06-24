@@ -34,12 +34,13 @@ export const TelusLogo: React.FC<TelusLogoProps> = ({ className = '', size = 'md
   }
 
   // Priority: 
-  // 1. Local /logo.png (or .svg) - User should upload this to /public/
-  // 2. VectorLogo SVGs
-  // 3. Wikimedia Fallback
+  // 1. Local /logo.png
+  // 2. Local /telus-logo.svg
+  // 3. VectorLogo SVGs
+  // 4. Wikimedia Fallback
   const getSrc = () => {
-    if (!imgError) return "/logo.png"; // Change extension if you upload a .svg
-    return "https://www.vectorlogo.zone/logos/telus/telus-ar21.svg";
+    if (!imgError) return "/logo.png";
+    return "/telus-logo.svg";
   };
 
   return (
@@ -51,10 +52,13 @@ export const TelusLogo: React.FC<TelusLogoProps> = ({ className = '', size = 'md
         onError={(e) => {
           const target = e.target as HTMLImageElement;
           if (target.src.includes("/logo.png")) {
-            // If local logo fails, try SVG fallback
+            // Try telus-logo.svg if png fails
+            target.src = "/telus-logo.svg";
+          } else if (target.src.includes("/telus-logo.svg")) {
+            // Try external SVG if all local fail
             target.src = "https://www.vectorlogo.zone/logos/telus/telus-ar21.svg";
           } else if (target.src.includes("vectorlogo.zone")) {
-            // If main SVG fails, try Wiki fallback
+            // Try Wiki fallback
             target.src = "https://upload.wikimedia.org/wikipedia/commons/d/d4/TELUS_logo.svg";
           } else {
             handleFinalError();

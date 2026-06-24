@@ -110,7 +110,7 @@ export const PortfolioIntelligence: React.FC<PortfolioIntelligenceProps> = ({ cu
     
     customers.forEach(customer => {
       const services = customer.result.customerServices || [];
-      const serviceNames = services.map(s => s.serviceName.toLowerCase());
+      const serviceNames = services.map(s => (s.serviceName || '').toLowerCase());
       const customerPotential: string[] = [];
       
       // Security Upsell

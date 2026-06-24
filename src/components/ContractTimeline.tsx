@@ -216,11 +216,20 @@ export const ContractTimeline: React.FC<ContractTimelineProps> = ({ customers })
           const riskLevel = safeDaysToExpiry !== null && safeDaysToExpiry <= 30 ? 'critical' : 
                            safeDaysToExpiry !== null && safeDaysToExpiry <= 90 ? 'warning' : 'healthy';
 
+          // Check if SOW is unsigned based on the customer's unsignedDocuments list
+          const isSowUnsignedInDocs = customer.result.unsignedDocuments?.some(doc => {
+            const cleanDoc = cleanSowName(doc, customer.customerName).toLowerCase();
+            const cleanGroupName = sow.sowName.toLowerCase();
+            return cleanDoc.includes(cleanGroupName) || cleanGroupName.includes(cleanDoc);
+          }) || false;
+          const isSigned = !isSowUnsignedInDocs;
+
           return {
             ...sow,
             sowType,
             totalMonths,
             displayTerm,
+            isSigned,
             startDate: minDafDate ? new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: 'numeric' }).format(minDafDate) : 'N/A',
             endDate: maxExpiryDate ? new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: 'numeric' }).format(maxExpiryDate) : 'N/A',
             startRaw: minDafDate ? minDafDate.getTime() : Infinity,
@@ -356,7 +365,7 @@ export const ContractTimeline: React.FC<ContractTimelineProps> = ({ customers })
                           <div className="flex flex-col items-start text-left">
                             <div className="flex items-center space-x-2">
                               <span className="font-bold text-telus-gray text-sm">{sow.sowName}</span>
-                              {sow.services.some((s: any) => !s.isSigned) && (
+                              {!sow.isSigned && (
                                 <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-tighter bg-rose-500/10 text-rose-500 border border-rose-500/20">
                                   Unsigned
                                 </span>

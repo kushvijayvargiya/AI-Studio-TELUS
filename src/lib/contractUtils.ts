@@ -59,15 +59,20 @@ export const getBilledQuantity = (service: ServiceDetail): number => {
   const onboarded = getNum(service.onboardedQuantity);
   const total = getNum(service.totalQuantity);
   
+  // If we have an active DAF, the onboarded quantity should be exactly as per DAF
+  if (service.hasDAF) {
+    return onboarded;
+  }
+  
   // Prioritize actual confirmed quantities
   if (onboarded > 0) return onboarded;
   
   // For PS/TS services that are marked as billed/completed, fallback to total qty
   const isPSorTS = service.serviceType === 'PS' || service.serviceType === 'TS' || 
-                   service.serviceType?.toLowerCase().includes('professional') || 
-                   service.serviceType?.toLowerCase().includes('transition');
-  const isBilled = service.billingStatus?.toLowerCase().includes('billed') || 
-                   service.billingStatus?.toLowerCase().includes('completed');
+                   service.serviceType?.toLowerCase()?.includes('professional') || 
+                   service.serviceType?.toLowerCase()?.includes('transition');
+  const isBilled = service.billingStatus?.toLowerCase()?.includes('billed') || 
+                   service.billingStatus?.toLowerCase()?.includes('completed');
                    
   if (isPSorTS && isBilled && total > 0) return total;
   if (onboarded > 0) return onboarded;
@@ -97,13 +102,13 @@ export const calculateBilledAmount = (service: ServiceDetail) => {
 
   // If onboarded is 0, billed is 0 (unless it's a fixed fee PS/TS that's billed)
   const isPSorTS = service.serviceType === 'PS' || service.serviceType === 'TS' || 
-                   service.serviceType?.toLowerCase().includes('professional') || 
-                   service.serviceType?.toLowerCase().includes('transition');
-  const isBilled = service.billingStatus?.toLowerCase().includes('billed') || 
-                   service.billingStatus?.toLowerCase().includes('completed');
+                   service.serviceType?.toLowerCase()?.includes('professional') || 
+                   service.serviceType?.toLowerCase()?.includes('transition');
+  const isBilled = service.billingStatus?.toLowerCase()?.includes('billed') || 
+                   service.billingStatus?.toLowerCase()?.includes('completed');
 
   if (onboardedQty === 0) {
-    if (isPSorTS && isBilled) return amount;
+    if (isPSorTS && isBilled && !service.hasDAF) return amount;
     return 0;
   }
 
@@ -132,8 +137,8 @@ export const checkActive = (s: ServiceDetail, monthStart: Date, monthEnd: Date, 
   if (s.requiresDAF && !s.hasDAF) return false;
 
   const isRecurring = s.serviceType === 'MS' || 
-                      (s.serviceType && s.serviceType.toLowerCase().includes('managed')) || 
-                      (s.amount && (s.amount.toLowerCase().includes('month') || s.amount.toLowerCase().includes('year')));
+                      (s.serviceType && s.serviceType.toLowerCase()?.includes('managed')) || 
+                      (s.amount && (s.amount.toLowerCase()?.includes('month') || s.amount.toLowerCase()?.includes('year')));
   
   const start = parseDate(s.dafStartDate || s.effectiveDate || fallbackDate);
   const end = parseDate(s.potentialEndDate || s.expiryDate);
@@ -241,7 +246,7 @@ export const calculateRevenueForMonth = (result: ContractAnalysisResult, date: D
           const dummyService = {
             serviceName: `Change Order: ${co.changeOrderNumber || co.changeDescription}`,
             amount: co.amount,
-            serviceType: co.amount && co.amount.toLowerCase().includes('month') ? 'MS' : 'PS',
+            serviceType: co.amount && co.amount.toLowerCase()?.includes('month') ? 'MS' : 'PS',
             totalQuantity: '1'
           } as ServiceDetail;
           if (checkActive(dummyService, monthStart, monthEnd, result, co.date, isForecast)) {
@@ -324,20 +329,20 @@ export const calculateRevenueForMonth = (result: ContractAnalysisResult, date: D
 export const hasCancellationCO = (result: ContractAnalysisResult, sowName: string): boolean => {
   return result.changeOrders?.some(co => 
     co.associatedSOW === sowName && 
-    (co.changeDescription?.toLowerCase().includes('cancellation') || 
-     co.changeDescription?.toLowerCase().includes('terminate') ||
-     co.changeOrderNumber?.toLowerCase().includes('cancellation') ||
-     co.changeOrderNumber?.toLowerCase().includes('terminate'))
+    (co.changeDescription?.toLowerCase()?.includes('cancellation') || 
+     co.changeDescription?.toLowerCase()?.includes('terminate') ||
+     co.changeOrderNumber?.toLowerCase()?.includes('cancellation') ||
+     co.changeOrderNumber?.toLowerCase()?.includes('terminate'))
   ) || false;
 };
 
 export const getCancellationDate = (result: ContractAnalysisResult, sowName: string): Date | null => {
   const cancellationCO = result.changeOrders?.find(co => 
     co.associatedSOW === sowName && 
-    (co.changeDescription?.toLowerCase().includes('cancellation') || 
-     co.changeDescription?.toLowerCase().includes('terminate') ||
-     co.changeOrderNumber?.toLowerCase().includes('cancellation') ||
-     co.changeOrderNumber?.toLowerCase().includes('terminate'))
+    (co.changeDescription?.toLowerCase()?.includes('cancellation') || 
+     co.changeDescription?.toLowerCase()?.includes('terminate') ||
+     co.changeOrderNumber?.toLowerCase()?.includes('cancellation') ||
+     co.changeOrderNumber?.toLowerCase()?.includes('terminate'))
   );
   
   if (cancellationCO && cancellationCO.date) {

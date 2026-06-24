@@ -7,20 +7,73 @@ export function cn(...inputs: ClassValue[]) {
 
 export const normalizeSow = (str: string) => {
   if (!str) return 'sow';
-  return str.toLowerCase()
-    .replace(/\([^)]*\)/g, '')
-    .replace(/sow|co|change order|contract|signed|active|final|draft|v\d+|version|rev\d+|revision/gi, '')
-    .replace(/[^a-z0-9]/g, '')
-    .trim() || 'sow';
+  let s = str.toLowerCase().replace(/\\/g, '/');
+  
+  // Clean nested paths properly by filtering out generic wrapper folders
+  if (s.includes('/')) {
+    const parts = s.split('/').map(p => p.trim()).filter(Boolean);
+    const genericFolders = [
+      'customer sows', 'customer sow', 'vendor sows', 'vendor sow', 'root', 
+      'added documents', 'added_documents', 'temp', 'unknown', 'drafts', 
+      'daf', 'dafs', 'co', 'cos', 'change orders', 'change_orders', 'sow', 'sows',
+      'archive', 'out', 'dist', 'src', 'files', 'documents', 'uploads', 'tmp'
+    ];
+    const specificParts = parts.filter(p => !genericFolders.includes(p));
+    if (specificParts.length > 0) {
+      // Use the last specific part (the SOW folder segment)
+      s = specificParts[specificParts.length - 1];
+    } else if (parts.length > 0) {
+      s = parts[parts.length - 1];
+    }
+  }
+
+  // Strip trailing or embedded subfolder segments like "/daf", "/dafs", "/deliverable approval forms"
+  s = s.replace(/[\/\\\s]+(dafs?|deliverable\s*approval\s*forms?|added\s*documents?|added_documents?|unsigned|signed|co|cos|change\s*orders?)([\/\\\s]+|$)/gi, ' ');
+  
+  // Strip common Change Order prefixes/suffixes with numbers first, so numbers don't remain as distinct keys
+  s = s.replace(/(change\s*order|change_order|co|cr|amendment|change\s*request|change_request|revision|rev|v|version)\s*[-_]?\s*#?\s*\d+/gi, '');
+  
+  // Cut any parts starting with "co -" or "co #" or "change order" to group CO under core SOW folder
+  s = s.replace(/\s+(co\s*[-_]?\s*#?\s*\d+|change\s*order\s*[-_]?\s*\d+|amendment\s*[-_]?\s*\d+|cr\s*[-_]?\s*\d+)/gi, '');
+  
+  // Remove parentheses/brackets and their contents
+  s = s.replace(/\([^)]*\)/g, '').replace(/\[[^\]]*\]/g, '');
+  
+  // Strip standard keywords and DAF terms
+  s = s.replace(/sow|co|change order|contract|signed|active|final|draft|v\d+|version|rev\d+|revision|amendment|dafs?|deliverable|approval|forms?/gi, '');
+  
+  // Strip non-alphanumeric characters
+  s = s.replace(/[^a-z0-9]/g, '');
+  
+  return s.trim() || 'sow';
 };
 
 export const cleanSowName = (name: string, customerName?: string) => {
   let rawName = (name || 'Unknown SOW').trim();
+  
+  // Standardize slashes
+  rawName = rawName.replace(/\\/g, '/');
+
+  // Clean trailing DAF/CO/Archived/Temp subdirectories so we keep the core parent SOW directory name
+  rawName = rawName.replace(/[\/\\]+(dafs?|deliverable\s*approval\s*forms?|added\s*documents?|added_documents?|unsigned|signed|co\s*#?\s*\d*|cos?|change\s*orders?)$/i, '');
+  
   const originalName = rawName;
   
-  // Try removing everything before the first "/"
+  // Clean nested paths properly by filtering out generic wrapper folders
   if (rawName.includes('/')) {
-    rawName = rawName.substring(rawName.indexOf('/') + 1).trim();
+    const parts = rawName.split('/').map(p => p.trim()).filter(Boolean);
+    const genericFolders = [
+      'customer sows', 'customer sow', 'vendor sows', 'vendor sow', 'root', 
+      'added documents', 'added_documents', 'temp', 'unknown', 'drafts', 
+      'daf', 'dafs', 'co', 'cos', 'change orders', 'change_orders', 'sow', 'sows',
+      'archive', 'out', 'dist', 'src', 'files', 'documents', 'uploads', 'tmp'
+    ];
+    const specificParts = parts.filter(p => !genericFolders.includes(p.toLowerCase()));
+    if (specificParts.length > 0) {
+      rawName = specificParts[specificParts.length - 1];
+    } else if (parts.length > 0) {
+      rawName = parts[parts.length - 1];
+    }
   }
   
   if (customerName && customerName.trim().length > 0) {
@@ -89,6 +142,21 @@ export const cleanServiceName = (name: string, customerName?: string) => {
   let rawName = (name || 'Unknown Service').trim();
   const originalName = rawName;
   
+  // Strip common brand and category prefixes
+  const brandPrefixes = [
+    /^\s*telus\s+partner\s+hub\s+services\s*[-–—:]\s*(managed|professional|transition|other)?\s*serv(i|c)es\s*[-–—:]\s*/i,
+    /^\s*telus\s+partner\s+hub\s+services\s*[-–—:]\s*/i,
+    /^\s*partner\s+hub\s+services\s*[-–—:]\s*/i,
+    /^\s*(managed|professional|transition|other)\s+serv(i|c)es\s*[-–—:]\s*/i,
+    /^\s*telus\s+partner\s+hub\s+(services)?\s*/i
+  ];
+  
+  for (const regex of brandPrefixes) {
+    if (regex.test(rawName)) {
+      rawName = rawName.replace(regex, '').trim();
+    }
+  }
+
   if (customerName && customerName.trim().length > 0) {
     const cust = customerName.trim();
     const custLower = cust.toLowerCase();
@@ -283,10 +351,10 @@ export const formatAmountString = (amountStr?: string, serviceType?: string) => 
   return `${formatted} (One-time)`;
 };
 
-export const isUserBased = (serviceName: string, description: string, serviceType?: string) => {
+export const isUserBased = (serviceName?: string, description?: string, serviceType?: string) => {
   const isPSTS = serviceType === 'PS' || serviceType === 'TS' || 
-                 serviceType?.toLowerCase().includes('professional') || 
-                 serviceType?.toLowerCase().includes('transition');
+                 (serviceType && serviceType.toLowerCase().includes('professional')) || 
+                 (serviceType && serviceType.toLowerCase().includes('transition'));
   if (isPSTS) return false;
 
   const userBasedServices = [
@@ -298,14 +366,14 @@ export const isUserBased = (serviceName: string, description: string, serviceTyp
     'tenant complete'
   ];
   
-  const name = serviceName.toLowerCase();
+  const name = (serviceName || '').toLowerCase();
   return userBasedServices.some(s => name.includes(s));
 };
 
-export const isInfrastructureBased = (serviceName: string, description: string, serviceType?: string) => {
+export const isInfrastructureBased = (serviceName?: string, description?: string, serviceType?: string) => {
   const isPSTS = serviceType === 'PS' || serviceType === 'TS' || 
-                 serviceType?.toLowerCase().includes('professional') || 
-                 serviceType?.toLowerCase().includes('transition');
+                 (serviceType && serviceType.toLowerCase().includes('professional')) || 
+                 (serviceType && serviceType.toLowerCase().includes('transition'));
   if (isPSTS) return false;
 
   return !isUserBased(serviceName, description, serviceType);

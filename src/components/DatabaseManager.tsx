@@ -392,14 +392,20 @@ export const DatabaseManager: React.FC<DatabaseManagerProps> = ({ savedCustomers
               <Button size="sm" onClick={() => { setIsAdding(true); setNewRecord({}); }}>
                 <Plus className="w-3.5 h-3.5 mr-2" /> Add Manually
               </Button>
-              <label className="cursor-pointer">
-                <Button variant="outline" size="sm" className="pointer-events-none">
-                  <span className="flex items-center">
-                    <Upload className="w-3.5 h-3.5 mr-2" /> Bulk Upload
-                  </span>
-                </Button>
-                <input type="file" accept=".csv" className="hidden" onChange={(e) => handleFileUpload(e, activeView)} />
-              </label>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => document.getElementById(`bulk-upload-${activeView}`)?.click()}
+              >
+                <Upload className="w-3.5 h-3.5 mr-2" /> Bulk Upload
+              </Button>
+              <input 
+                id={`bulk-upload-${activeView}`}
+                type="file" 
+                accept=".csv" 
+                className="hidden" 
+                onChange={(e) => handleFileUpload(e, activeView)} 
+              />
             </div>
           </div>
           

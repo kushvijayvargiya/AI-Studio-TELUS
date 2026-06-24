@@ -26,6 +26,8 @@ import { ProductIntelligenceDashboard } from './components/ProductIntelligenceDa
 import { SmartDashboard } from './components/SmartDashboard';
 import { WatchFolder } from './components/WatchFolder';
 import { RulesInfo } from './components/RulesInfo';
+import { AISettings } from './components/AISettings';
+import { GoogleDriveExplorer } from './components/GoogleDriveExplorer';
 
 import { TelusLogo } from './components/TelusLogo';
 import { SkeletonCard } from './components/ui/Skeleton';
@@ -50,7 +52,7 @@ export default function App() {
 
   // State for active view
   const [activeCustomer, setActiveCustomer] = useState<SavedCustomer | null>(null);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'new' | 'timeline' | 'billing' | 'budget-vs-actuals' | 'intelligence-portfolio' | 'intelligence-marketing' | 'intelligence-analytics' | 'database' | 'smart-insights' | 'rules'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'new' | 'timeline' | 'billing' | 'budget-vs-actuals' | 'intelligence-portfolio' | 'intelligence-marketing' | 'intelligence-analytics' | 'database' | 'smart-insights' | 'rules' | 'ai-settings'>('dashboard');
   const [resultsInitialTab, setResultsInitialTab] = useState<'overview' | 'monthly_billing' | 'timeline' | 'evolution' | 'intelligence' | 'margin_analysis' | 'risk_dashboard' | 'revenue_forecast' | 'daf'>('overview');
   const [savedCustomers, setSavedCustomers] = useState<CustomerSummary[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -59,6 +61,9 @@ export default function App() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isChatbotUploading, setIsChatbotUploading] = useState(false);
   const [isChatbotExpanded, setIsChatbotExpanded] = useState(true);
+  const [isDriveOpen, setIsDriveOpen] = useState(() => {
+    return typeof window !== 'undefined' && window.location.hash.includes('state=google_drive_oauth');
+  });
 
   useEffect(() => {
     loadSavedCustomers();
@@ -175,13 +180,7 @@ export default function App() {
     
     // Pre-flight validation
     if (file.size > 50 * 1024 * 1024) { // 50MB limit
-      setError("File is too large. Please upload a ZIP file smaller than 50MB.");
-      setIsLoading(false);
-      return;
-    }
-
-    if (!file.name.toLowerCase().endsWith('.zip')) {
-      setError("Invalid file format. Please upload a ZIP file containing your contract documents.");
+      setError("File is too large. Please upload a file smaller than 50MB.");
       setIsLoading(false);
       return;
     }
@@ -196,11 +195,16 @@ export default function App() {
     }
 
     try {
-      // 1. Parse the ZIP file
-      const parsedDocs = await parseZipFile(file);
+      // 1. Parse the file (ZIP or single file)
+      let parsedDocs: ParsedDocument[] = [];
+      if (file.name.toLowerCase().endsWith('.zip')) {
+        parsedDocs = await parseZipFile(file);
+      } else {
+        parsedDocs = await parseSingleFile(file);
+      }
       
       if (parsedDocs.length === 0) {
-        throw new Error("No supported documents found in the ZIP file. Please ensure it contains PDFs, Word documents, or text files.");
+        throw new Error("No supported text/content found in the document. Please ensure it contains readable text.");
       }
 
       // 2. Send to Gemini for analysis
@@ -415,13 +419,14 @@ export default function App() {
 
               {/* Manage Dropdown */}
               <div className="relative group">
-                <button className={`px-6 py-2.5 rounded-full text-sm font-black transition-all duration-200 flex items-center ${activeTab === 'billing' || activeTab === 'budget-vs-actuals' || activeTab === 'database' ? 'text-telus-purple bg-telus-purple/10' : 'text-text-secondary hover:text-telus-purple hover:bg-bg-secondary'}`}>
+                <button className={`px-6 py-2.5 rounded-full text-sm font-black transition-all duration-200 flex items-center ${activeTab === 'billing' || activeTab === 'budget-vs-actuals' || activeTab === 'database' || activeTab === 'ai-settings' ? 'text-telus-purple bg-telus-purple/10' : 'text-text-secondary hover:text-telus-purple hover:bg-bg-secondary'}`}>
                   Manage <ChevronDown className="w-4 h-4 ml-1 group-hover:rotate-180 transition-transform" />
                 </button>
                 <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 bg-bg-secondary/95 backdrop-blur-md rounded-2xl shadow-[0_20px_50px_rgba(75,40,109,0.15)] border border-border-primary py-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[110] translate-y-2 group-hover:translate-y-0">
                   <button onClick={() => { setActiveCustomer(null); setActiveTab('billing'); }} className="w-full text-left px-6 py-3 text-sm font-black text-text-secondary hover:bg-bg-primary hover:text-telus-purple transition-colors">Billing</button>
                   <button onClick={() => { setActiveCustomer(null); setActiveTab('budget-vs-actuals'); }} className="w-full text-left px-6 py-3 text-sm font-black text-text-secondary hover:bg-bg-primary hover:text-telus-purple transition-colors">Budget vs Actuals</button>
                   <button onClick={() => { setActiveCustomer(null); setActiveTab('database'); }} className="w-full text-left px-6 py-3 text-sm font-black text-text-secondary hover:bg-bg-primary hover:text-telus-purple transition-colors">Database</button>
+                  <button onClick={() => { setActiveCustomer(null); setActiveTab('ai-settings'); }} className="w-full text-left px-6 py-3 text-sm font-black text-text-secondary hover:bg-bg-primary hover:text-telus-purple transition-colors">AI Settings</button>
                   <button onClick={() => { setActiveCustomer(null); setActiveTab('rules'); }} className="w-full text-left px-6 py-3 text-sm font-black text-text-secondary hover:bg-bg-primary hover:text-telus-purple transition-colors border-t border-border-primary/50 mt-2 pt-4">System Rules</button>
                 </div>
               </div>
@@ -440,7 +445,7 @@ export default function App() {
 
             <button 
               className="group flex items-center space-x-2 text-sm font-bold text-telus-purple bg-[#4B286D0D] hover:bg-[#4B286D1A] transition-all px-5 py-2.5 rounded-full border border-[#4B286D1A]"
-              onClick={() => alert("Google Drive integration coming soon!")}
+              onClick={() => setIsDriveOpen(true)}
             >
               <Cloud className="w-4 h-4" />
               <span className="hidden sm:inline">Import</span>
@@ -522,6 +527,7 @@ export default function App() {
               <button onClick={() => { setActiveCustomer(null); setActiveTab('billing'); setIsMobileMenuOpen(false); }} className="w-full text-left px-6 py-4 text-lg font-bold text-text-secondary hover:bg-bg-primary hover:text-telus-purple rounded-2xl transition-all">Billing</button>
               <button onClick={() => { setActiveCustomer(null); setActiveTab('budget-vs-actuals'); setIsMobileMenuOpen(false); }} className="w-full text-left px-6 py-4 text-lg font-bold text-text-secondary hover:bg-bg-primary hover:text-telus-purple rounded-2xl transition-all">Budget vs Actuals</button>
               <button onClick={() => { setActiveCustomer(null); setActiveTab('database'); setIsMobileMenuOpen(false); }} className="w-full text-left px-6 py-4 text-lg font-bold text-text-secondary hover:bg-bg-primary hover:text-telus-purple rounded-2xl transition-all">Database</button>
+              <button onClick={() => { setActiveCustomer(null); setActiveTab('ai-settings'); setIsMobileMenuOpen(false); }} className="w-full text-left px-6 py-4 text-lg font-bold text-text-secondary hover:bg-bg-primary hover:text-telus-purple rounded-2xl transition-all">AI Settings</button>
               <button onClick={() => { setActiveCustomer(null); setActiveTab('rules'); setIsMobileMenuOpen(false); }} className="w-full text-left px-6 py-4 text-lg font-bold text-text-secondary hover:bg-bg-primary hover:text-telus-purple rounded-2xl transition-all border-t border-border-primary/50 mt-2">System Rules</button>
             </div>
           </div>
@@ -555,6 +561,13 @@ export default function App() {
                 </div>
               )}
 
+              {/* AI Settings Section */}
+              {activeTab === 'ai-settings' && (
+                <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+                  <AISettings />
+                </div>
+              )}
+
               {/* Upload Section */}
               {activeTab === 'new' && (
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300 max-w-5xl mx-auto">
@@ -564,6 +577,21 @@ export default function App() {
                       Upload New Contract
                     </h2>
                     <FileUpload onFileSelect={handleFileSelect} isLoading={isLoading} />
+                    
+                    <div className="flex flex-col items-center justify-center mt-6">
+                      <div className="flex items-center space-x-2 text-text-secondary/40">
+                        <div className="h-px bg-border-primary w-12" />
+                        <span className="text-[10px] font-black uppercase tracking-wider">or connected workspace</span>
+                        <div className="h-px bg-border-primary w-12" />
+                      </div>
+                      <button
+                        onClick={() => setIsDriveOpen(true)}
+                        className="mt-4 flex items-center space-x-2 px-5 py-2.5 bg-bg-secondary hover:bg-bg-primary text-xs font-bold text-telus-purple rounded-full border border-[#4B286D1A] shadow-sm hover:shadow hover:border-telus-purple/40 transition-all cursor-pointer"
+                      >
+                        <Cloud className="w-4 h-4 text-telus-purple" />
+                        <span>Select Documents from Google Drive</span>
+                      </button>
+                    </div>
                     
                     {error && (
                       <div className="mt-8 p-5 bg-[#EF44440D] border border-[#EF444433] rounded-2xl flex items-start space-x-4 text-red-800">
@@ -961,6 +989,13 @@ export default function App() {
             </div>
           </div>
         )}
+
+        {/* Google Drive File Selector Modal */}
+        <GoogleDriveExplorer 
+          isOpen={isDriveOpen} 
+          onClose={() => setIsDriveOpen(false)} 
+          onFileSelect={handleFileSelect} 
+        />
 
       </div>
     </div>

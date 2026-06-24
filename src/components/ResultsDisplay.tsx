@@ -68,8 +68,8 @@ const ServiceTable: React.FC<{
     if (s.amount) {
       hasAmounts = true;
       const billedAmount = calculateBilledAmount(s);
-      const isMS = s.serviceType === 'MS' || s.serviceType?.toLowerCase().includes('managed');
-      if (isMS || s.amount.toLowerCase().includes('month') || s.amount.toLowerCase().includes('year')) {
+      const isMS = s.serviceType === 'MS' || s.serviceType?.toLowerCase()?.includes('managed');
+      if (isMS || s.amount?.toLowerCase()?.includes('month') || s.amount?.toLowerCase()?.includes('year')) {
         recurring += billedAmount;
       } else {
         oneTime += billedAmount;
@@ -109,18 +109,18 @@ const ServiceTable: React.FC<{
           <tbody className="divide-y divide-border-primary/30">
             {services.map((service, idx) => {
               const isPSorTS = service.serviceType === 'PS' || service.serviceType === 'TS' || 
-                               service.serviceType?.toLowerCase().includes('professional') || 
-                               service.serviceType?.toLowerCase().includes('transition');
-              const isBilled = service.billingStatus?.toLowerCase().includes('billed') || 
-                               service.billingStatus?.toLowerCase().includes('completed');
+                               service.serviceType?.toLowerCase()?.includes('professional') || 
+                               service.serviceType?.toLowerCase()?.includes('transition');
+              const isBilled = service.billingStatus?.toLowerCase()?.includes('billed') || 
+                               service.billingStatus?.toLowerCase()?.includes('completed');
 
               let initialQty = '';
               let finalQty = '';
 
               if (isSow) {
                 initialQty = service.totalQuantity && service.totalQuantity !== 'NaN' ? service.totalQuantity : '1';
-                // If PS/TS and billed, onboarded = total
-                if (isPSorTS && isBilled) {
+                // If PS/TS and billed, onboarded = total, unless we have a DAF
+                if (isPSorTS && isBilled && !service.hasDAF) {
                   finalQty = initialQty;
                 } else {
                   finalQty = service.onboardedQuantity && service.onboardedQuantity !== 'NaN' ? service.onboardedQuantity : '0';
@@ -234,7 +234,7 @@ const ServiceTable: React.FC<{
                     })()}
                   </td>
                   <td className="px-2 py-1 text-right">
-                    {(service.billingStatus?.toLowerCase().includes('daf') || service.requiresDAF || service.billingStatus?.toLowerCase().includes('billed')) && onToggleDaf ? (
+                    {(service.billingStatus?.toLowerCase()?.includes('daf') || service.requiresDAF || service.billingStatus?.toLowerCase()?.includes('billed')) && onToggleDaf ? (
                       <button
                         onClick={(e) => {
                           e.preventDefault();
@@ -243,11 +243,11 @@ const ServiceTable: React.FC<{
                         }}
                         className={cn(
                           "inline-flex items-center px-1 py-0 rounded text-[7px] font-bold uppercase tracking-wider border transition-all cursor-pointer",
-                          service.billingStatus?.toLowerCase().includes('pending') 
+                          service.billingStatus?.toLowerCase()?.includes('pending') 
                             ? "bg-amber-100 text-amber-700 border-amber-200 hover:bg-emerald-100 hover:text-emerald-700 hover:border-emerald-200 dark:bg-amber-500/20 dark:text-amber-400 dark:border-amber-500/30 dark:hover:bg-telus-green/20 dark:hover:text-telus-green dark:hover:border-telus-green/30" 
                             : "bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-amber-100 hover:text-amber-700 hover:border-amber-200 dark:bg-telus-green/20 dark:text-telus-green dark:border-telus-green/30 dark:hover:bg-amber-500/20 dark:hover:text-amber-400 dark:hover:border-amber-500/30"
                         )}
-                        title={service.billingStatus?.toLowerCase().includes('pending') ? "Click to mark DAF as received" : "Click to mark DAF as missing"}
+                        title={service.billingStatus?.toLowerCase()?.includes('pending') ? "Click to mark DAF as received" : "Click to mark DAF as missing"}
                       >
                         {service.billingStatus}
                       </button>
@@ -255,7 +255,7 @@ const ServiceTable: React.FC<{
                       <span className={cn(
                         "inline-flex items-center px-1.5 py-0 rounded text-[8px] font-bold uppercase tracking-wider border",
                         !service.isSigned ? "bg-rose-500/10 text-rose-500 border-rose-500/20" : 
-                        service.billingStatus?.toLowerCase().includes('pending') ? "bg-amber-500/10 text-amber-600 border-amber-500/20" : "bg-telus-green/10 text-telus-green border-telus-green/20"
+                        service.billingStatus?.toLowerCase()?.includes('pending') ? "bg-amber-500/10 text-amber-600 border-amber-500/20" : "bg-telus-green/10 text-telus-green border-telus-green/20"
                       )}>
                         {service.billingStatus || (service.isSigned ? 'Active' : 'Unsigned')}
                       </span>
@@ -382,7 +382,15 @@ const SowGroupDisplay: React.FC<{
     ? new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: 'numeric' }).format(minDafDate)
     : 'N/A';
 
-  const isSowSigned = visibleServices.every(s => s.isSigned);
+  // SOW is signed if its name does not match any entry in the unsignedDocuments list.
+  // This decouples the contract signature status completely from any service level onboarding (DAF) states.
+  const isSowUnsignedInDocs = result?.unsignedDocuments?.some(doc => {
+    const cleanDoc = utilsCleanSowName(doc, result?.customerName || '').toLowerCase();
+    const cleanGroupName = sowName.toLowerCase();
+    return cleanDoc.includes(cleanGroupName) || cleanGroupName.includes(cleanDoc);
+  }) || false;
+
+  const isSowSigned = !isSowUnsignedInDocs;
 
   const calculateSowTotal = (services: ServiceDetail[], cos: any[], facing: 'Customer' | 'Vendor') => {
     let oneTime = 0;
@@ -393,8 +401,8 @@ const SowGroupDisplay: React.FC<{
       if (s.amount) {
         hasAmounts = true;
         const billedAmount = calculateBilledAmount(s);
-        const isMS = s.serviceType === 'MS' || s.serviceType?.toLowerCase().includes('managed');
-        if (isMS || s.amount.toLowerCase().includes('month') || s.amount.toLowerCase().includes('year')) {
+        const isMS = s.serviceType === 'MS' || s.serviceType?.toLowerCase()?.includes('managed');
+        if (isMS || s.amount?.toLowerCase()?.includes('month') || s.amount?.toLowerCase()?.includes('year')) {
           recurring += billedAmount;
         } else {
           oneTime += billedAmount;
@@ -412,8 +420,8 @@ const SowGroupDisplay: React.FC<{
             if (s.amount) {
               hasAmounts = true;
               const billedAmount = calculateBilledAmount(s);
-              const isMS = s.serviceType === 'MS' || s.serviceType?.toLowerCase().includes('managed');
-              if (isMS || s.amount.toLowerCase().includes('month') || s.amount.toLowerCase().includes('year')) {
+              const isMS = s.serviceType === 'MS' || s.serviceType?.toLowerCase()?.includes('managed');
+              if (isMS || s.amount?.toLowerCase()?.includes('month') || s.amount?.toLowerCase()?.includes('year')) {
                 recurring += billedAmount;
               } else {
                 oneTime += billedAmount;
@@ -426,7 +434,7 @@ const SowGroupDisplay: React.FC<{
 
           hasAmounts = true;
           // For COs without specific services, use the overall CO amount
-          if (co.amount.toLowerCase().includes('month') || co.amount.toLowerCase().includes('year')) {
+          if (co.amount?.toLowerCase()?.includes('month') || co.amount?.toLowerCase()?.includes('year')) {
             recurring += parseAmount(co.amount);
           } else {
             oneTime += parseAmount(co.amount);
@@ -738,8 +746,8 @@ const SowGroupDisplay: React.FC<{
                                 if (s.amount) {
                                   hasAmounts = true;
                                   const billedAmount = calculateBilledAmount(s);
-                                  const isMS = s.serviceType === 'MS' || s.serviceType?.toLowerCase().includes('managed');
-                                  if (isMS || s.amount.toLowerCase().includes('month') || s.amount.toLowerCase().includes('year')) {
+                                  const isMS = s.serviceType === 'MS' || s.serviceType?.toLowerCase()?.includes('managed');
+                                  if (isMS || s.amount?.toLowerCase()?.includes('month') || s.amount?.toLowerCase()?.includes('year')) {
                                     recurring += billedAmount;
                                   } else {
                                     oneTime += billedAmount;
@@ -1509,7 +1517,7 @@ const DafStatusView = ({ result, onUpdateResult, customerId }: { result: Contrac
 };
 
 export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ 
-  result, 
+  result: rawResult, 
   onRefresh, 
   isRefreshing = false, 
   initialTab = 'overview', 
@@ -1519,6 +1527,80 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
   userRole = 'ADMIN'
 }) => {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const result = React.useMemo(() => {
+    if (!rawResult) return rawResult;
+    const isServiceHeadingOrTotal = (service: ServiceDetail): boolean => {
+      if (!service || !service.serviceName) return false;
+      const name = service.serviceName.toLowerCase().trim();
+      const desc = (service.description || '').toLowerCase().trim();
+      
+      // Total / Subtotal checks
+      if (
+        name === 'total' || 
+        name === 'subtotal' || 
+        name === 'grand total' ||
+        name === 'totals' ||
+        name === 'monthly recurring total' ||
+        name === 'one-time charges total' ||
+        name === 'total charges' ||
+        name === 'total cost' ||
+        name === 'total price' ||
+        name === 'total recurring' ||
+        name === 'total one-time' ||
+        name.startsWith('total ') || 
+        name.endsWith(' total') ||
+        name.includes('sub-total') ||
+        name.includes('monthly total') ||
+        name.includes('one-time total') ||
+        desc === 'grand total' ||
+        desc === 'total' ||
+        desc === 'subtotal'
+      ) {
+        return true;
+      }
+      
+      // Service headings checks
+      if (
+        name === 'managed services' ||
+        name === 'professional services' ||
+        name === 'transition services' ||
+        name === 'optional services' ||
+        name === 'additional services' ||
+        name === 'service element description' ||
+        name === 'description' ||
+        name === 'service name' ||
+        name === 'service description' ||
+        name === 'service element' ||
+        name === 'managed service description' ||
+        name === 'professional service description' ||
+        name === 'service detail' ||
+        name === 'service details' ||
+        name === 'telus partner hub' || 
+        name === 'partner hub services' || 
+        name === 'services index' || 
+        name === 'one-time charges' || 
+        name === 'one-time services' || 
+        name === 'recurring charges' || 
+        name === 'recurring services' ||
+        name === 'monthly recurring charges'
+      ) {
+        return true;
+      }
+      
+      return false;
+    };
+
+    return {
+      ...rawResult,
+      customerServices: rawResult.customerServices?.filter(s => !isServiceHeadingOrTotal(s)) || [],
+      vendorServices: rawResult.vendorServices?.filter(s => !isServiceHeadingOrTotal(s)) || [],
+      changeOrders: rawResult.changeOrders?.map(co => ({
+        ...co,
+        services: co.services?.filter(s => !isServiceHeadingOrTotal(s)) || []
+      })) || []
+    };
+  }, [rawResult]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0 && onFileSelect) {
@@ -1632,21 +1714,8 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
     setAllExpanded(nextState);
     const newExpanded: Record<string, boolean> = {};
     
-    const allSows = new Set<string>();
-    result.customerServices?.forEach(s => allSows.add(normalizeSow(s.sowName)));
-    result.vendorServices?.forEach(s => allSows.add(normalizeSow(s.sowName)));
-    result.changeOrders?.forEach(co => {
-      let key = normalizeSow(co.associatedSOW);
-      allSows.add(key);
-    });
-    
-    // Attempt to handle grouped keys similar to getSowGroups for changeOrders
     const sowGroupsKeys = Object.keys(getSowGroups());
     sowGroupsKeys.forEach(sow => {
-      newExpanded[sow] = nextState;
-    });
-    
-    allSows.forEach(sow => {
       newExpanded[sow] = nextState;
     });
     setExpandedSows(newExpanded);
@@ -1655,17 +1724,8 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
   React.useEffect(() => {
     setExpandedSows(prev => {
       const initialExpanded: Record<string, boolean> = { ...prev };
-      const allSows = new Set<string>();
-      result.customerServices?.forEach(s => allSows.add(normalizeSow(s.sowName)));
-      result.vendorServices?.forEach(s => allSows.add(normalizeSow(s.sowName)));
-      result.changeOrders?.forEach(co => allSows.add(normalizeSow(co.associatedSOW)));
-      
       const sowGroupsKeys = Object.keys(getSowGroups());
       sowGroupsKeys.forEach(sow => {
-        if (initialExpanded[sow] === undefined) initialExpanded[sow] = false;
-      });
-
-      allSows.forEach(sow => {
         if (initialExpanded[sow] === undefined) initialExpanded[sow] = false;
       });
       
@@ -1738,30 +1798,21 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
     updatedResult.changeOrders?.forEach(co => {
       co.services?.forEach(processService);
       
-      if (validSowList.length > 0) {
-        const coSow = co.associatedSOW || '';
-        const coSowLower = coSow.toLowerCase();
-        
-        if (!validSows.has(coSow)) {
-          if (validSowList.length === 1) {
-            if (co.associatedSOW !== validSowList[0]) {
-              co.associatedSOW = validSowList[0];
-              hasChanges = true;
-            }
-          } else {
-            const match = validSowList.find(sow => {
-              const sowLower = sow.toLowerCase();
-              return (sowLower.length > 3 && coSowLower.includes(sowLower)) ||
-                     (coSowLower.length > 3 && sowLower.includes(coSowLower));
-            });
-            if (match && co.associatedSOW !== match) {
-              co.associatedSOW = match;
-              hasChanges = true;
-            } else if (['main', 'root', 'sow', 'unknown', ''].includes(coSowLower) && co.associatedSOW !== validSowList[0]) {
-              co.associatedSOW = validSowList[0];
-              hasChanges = true;
-            }
-          }
+      const coSow = co.associatedSOW || '';
+      const coSowLower = coSow.toLowerCase().trim();
+      
+      // Only align if the associated SOW is generic or empty, or to match exact casing of an existing valid SOW
+      if (['main', 'root', 'sow', 'unknown', ''].includes(coSowLower)) {
+        if (validSowList.length > 0) {
+          co.associatedSOW = validSowList[0];
+          hasChanges = true;
+        }
+      } else {
+        // Just normalize casing if there's a match in valid SOWs
+        const match = validSowList.find(sow => sow.toLowerCase() === coSowLower);
+        if (match && co.associatedSOW !== match) {
+          co.associatedSOW = match;
+          hasChanges = true;
         }
       }
     });
@@ -1774,6 +1825,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
   const getSowGroups = () => {
     const groups: Record<string, { displayName: string, customerServices: ServiceDetail[], vendorServices: ServiceDetail[], changeOrders: any[] }> = {};
     
+    // 1. Establish SOW groups based on actual services
     result.customerServices?.forEach(s => {
       const key = normalizeSow(s.sowName);
       if (!groups[key]) {
@@ -1800,32 +1852,33 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
       groups[key].vendorServices.push(s);
     });
 
+    const realSowKeys = Object.keys(groups);
+
+    // 2. Map Change Orders to their corresponding SOW groups
     result.changeOrders?.forEach((co, idx) => {
       let key = normalizeSow(co.associatedSOW);
       
-      // Attempt to associate orphaned COs with existing SOW groups
-      if (!groups[key]) {
-        const existingKeys = Object.keys(groups);
-        
-        if (existingKeys.length === 1) {
-          // If there's only one SOW group, the CO almost certainly belongs to it
-          key = existingKeys[0];
-        } else if (existingKeys.length > 1) {
-          // Try fuzzy matching
-          const coNameLower = (co.associatedSOW || '').toLowerCase();
-          const match = existingKeys.find(k => {
-            const groupNameLower = groups[k].displayName.toLowerCase();
-            // Check if one name is a significant substring of the other
-            return (groupNameLower.length > 3 && coNameLower.includes(groupNameLower)) || 
-                   (coNameLower.length > 3 && groupNameLower.includes(coNameLower));
-          });
-          
-          if (match) {
-            key = match;
-          } else if (['main', 'root', 'sow', 'unknown', ''].includes(key)) {
-            // If it's a generic name and we have multiple groups, default to the first one
-            // as it's usually the primary SOW
-            key = existingKeys[0];
+      if (realSowKeys.length > 0) {
+        if (!realSowKeys.includes(key)) {
+          // A. Fuzzy match normalized key
+          const fuzzyMatch = realSowKeys.find(rk => 
+            (rk.length > 3 && key.includes(rk)) || (key.length > 3 && rk.includes(key))
+          );
+          if (fuzzyMatch) {
+            key = fuzzyMatch;
+          } else {
+            // B. Fuzzy match raw display names
+            const coRawLower = (co.associatedSOW || '').toLowerCase();
+            const displayNameMatch = Object.entries(groups).find(([rk, g]) => {
+              const dnLower = g.displayName.toLowerCase();
+              return coRawLower.includes(dnLower) || dnLower.includes(coRawLower);
+            });
+            if (displayNameMatch) {
+              key = displayNameMatch[0];
+            } else {
+              // C. Fallback to the first available SOW key so it's always nested
+              key = realSowKeys[0];
+            }
           }
         }
       }
@@ -1841,7 +1894,15 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
       groups[key].changeOrders.push({ ...co, originalIndex: idx });
     });
 
-    return groups;
+    // Filter out completely empty SOW groups
+    const filtered: Record<string, { displayName: string, customerServices: ServiceDetail[], vendorServices: ServiceDetail[], changeOrders: any[] }> = {};
+    Object.entries(groups).forEach(([key, value]) => {
+      if (value.customerServices.length > 0 || value.vendorServices.length > 0 || value.changeOrders.length > 0) {
+        filtered[key] = value;
+      }
+    });
+
+    return filtered;
   };
 
   const handleMakeActive = (idx: number) => {
@@ -2181,7 +2242,7 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
               <TrendingUp className="w-3 h-3" />
               <span>Evolution</span>
             </button>
-            <button
+             <button
               onClick={() => setActiveTab('timeline')}
               className={cn(
                 "flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200",
@@ -2192,19 +2253,6 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
             >
               <Clock className="w-3 h-3" />
               <span>Timeline</span>
-            </button>
-            <button
-              onClick={() => setActiveTab('daf')}
-              className={cn(
-                "flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all duration-200",
-                activeTab === 'daf' 
-                  ? "bg-telus-purple text-white shadow-sm" 
-                  : "text-text-secondary hover:text-telus-purple hover:bg-bg-primary"
-              )}
-              title="Deliverable Approval Form Status"
-            >
-              <ShieldCheck className="w-3 h-3" />
-              <span>DAF (Deliverable Approval Form)</span>
             </button>
             <button
               onClick={() => setActiveTab('intelligence')}

@@ -9,6 +9,8 @@ export default defineConfig(({mode}) => {
     plugins: [react(), tailwindcss()],
     define: {
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
+      'process.env.FUELIX_API_KEY': JSON.stringify(env.FUELIX_API_KEY || env.VITE_FUELIX_API_KEY || env.FUEL_IX_API || env.FUELIX_API),
+      'process.env.FUELIX_MODEL': JSON.stringify(env.FUELIX_MODEL || env.VITE_FUELIX_MODEL || env.FUEL_IX_MODEL || env.FUELIX_MODEL_NAME),
     },
     resolve: {
       alias: {

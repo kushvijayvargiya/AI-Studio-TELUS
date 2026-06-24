@@ -14,7 +14,7 @@ export const CustomerIntelligence: React.FC<CustomerIntelligenceProps> = ({ resu
     [result.customerServices]
   );
   
-  const serviceNames = services.map(s => s.serviceName.toLowerCase());
+  const serviceNames = services.map(s => (s.serviceName || '').toLowerCase());
 
   // Deep categorization for PS Services
   const psTrends = useMemo(() => {
@@ -28,9 +28,9 @@ export const CustomerIntelligence: React.FC<CustomerIntelligenceProps> = ({ resu
     };
 
     psServices.forEach(s => {
-      const name = s.serviceName.toLowerCase();
-      const desc = s.description.toLowerCase();
-      const amt = parseFloat(s.amount.replace(/[^0-9.]/g, '')) || 0;
+      const name = (s.serviceName || '').toLowerCase();
+      const desc = (s.description || '').toLowerCase();
+      const amt = parseFloat((s.amount || '').replace(/[^0-9.]/g, '')) || 0;
 
       let cat = 'Other Projects';
       if (name.includes('cloud') || name.includes('azure') || name.includes('aws') || name.includes('migration') || name.includes('server')) {

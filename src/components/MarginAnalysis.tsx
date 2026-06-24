@@ -1,6 +1,6 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { ContractAnalysisResult, ServiceDetail } from '../lib/gemini';
-import { TrendingUp, TrendingDown, DollarSign, Percent, ArrowRight, Briefcase, ShieldAlert, AlertCircle, Info } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, Percent, ArrowRight, Briefcase, ShieldAlert, AlertCircle, Info, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn, cleanSowName, parseAmount, cleanServiceName } from '../lib/utils';
 
 interface MarginAnalysisProps {
@@ -15,6 +15,15 @@ const formatCurrency = (val: number) =>
   }).format(val);
 
 export const MarginAnalysis: React.FC<MarginAnalysisProps> = ({ result, showVendorFinancials = true }) => {
+  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
+
+  const toggleItem = (key: string) => {
+    setExpandedItems(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+  };
+
   const sowMarginData = useMemo(() => {
     const customerServices = result.customerServices || [];
     const vendorServices = result.vendorServices || [];
@@ -40,6 +49,32 @@ export const MarginAnalysis: React.FC<MarginAnalysisProps> = ({ result, showVend
           
           const margin = revenue - cost;
           const marginPercent = revenue > 0 ? (margin / revenue) * 100 : 0;
+
+          // Match individual services by name within this category
+          const allServiceNames = Array.from(new Set([
+            ...typeServices.map(s => cleanServiceName(s.serviceName, result.customerName)),
+            ...typeVendorServices.map(s => cleanServiceName(s.serviceName, result.customerName))
+          ]));
+
+          const detailLines = allServiceNames.map(name => {
+            const custLines = typeServices.filter(s => cleanServiceName(s.serviceName, result.customerName) === name);
+            const vendLines = typeVendorServices.filter(s => cleanServiceName(s.serviceName, result.customerName) === name);
+            
+            const lineRev = custLines.reduce((sum, s) => sum + parseAmount(s.amount), 0);
+            const lineCost = vendLines.reduce((sum, s) => sum + parseAmount(s.amount), 0);
+            const lineMargin = lineRev - lineCost;
+            const lineMarginPercent = lineRev > 0 ? (lineMargin / lineRev) * 100 : 0;
+            const lineQty = custLines[0]?.totalQuantity || vendLines[0]?.totalQuantity || '1';
+
+            return {
+              name,
+              qty: lineQty,
+              revenue: lineRev,
+              cost: lineCost,
+              margin: lineMargin,
+              marginPercent: lineMarginPercent
+            };
+          });
           
           return {
             type,
@@ -48,7 +83,8 @@ export const MarginAnalysis: React.FC<MarginAnalysisProps> = ({ result, showVend
             cost,
             margin,
             marginPercent,
-            count: typeServices.length
+            count: typeServices.length,
+            detailLines
           };
         }).filter(t => t.count > 0 || t.revenue > 0 || t.cost > 0);
       };
@@ -237,42 +273,100 @@ export const MarginAnalysis: React.FC<MarginAnalysisProps> = ({ result, showVend
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border-primary">
-                  {sow.items.map((item, iIdx) => (
-                    <tr key={iIdx} className="hover:bg-bg-primary transition-colors group">
-                      <td className="px-4 py-2">
-                        <div className="font-bold text-telus-gray group-hover:text-telus-purple transition-colors text-xs">{item.typeName}</div>
-                        <div className="text-[8px] text-text-secondary/60 font-bold uppercase tracking-widest mt-0.5">{item.count} lines aggregated</div>
-                      </td>
-                      <td className="px-4 py-2 text-right">
-                        <span className="font-black text-telus-gray text-xs tracking-tight">{formatCurrency(item.revenue)}</span>
-                        {item.type === 'MS' && <span className="text-[8px] text-text-secondary/40 ml-1 font-bold uppercase tracking-wider">/mo</span>}
-                      </td>
-                      {showVendorFinancials && (
-                        <>
-                          <td className="px-4 py-2 text-right">
-                            <span className="font-bold text-text-secondary/80 text-[11px] tracking-tight">{formatCurrency(item.cost)}</span>
-                            {item.type === 'MS' && <span className="text-[9px] text-text-secondary/40 ml-1 font-bold uppercase tracking-wider">/mo</span>}
-                          </td>
-                          <td className="px-4 py-2 text-right">
-                            <div className="flex items-center justify-end space-x-1.5">
-                              {item.margin >= 0 ? <TrendingUp className="w-3.5 h-3.5 text-telus-green" /> : <TrendingDown className="w-3.5 h-3.5 text-rose-500" />}
-                              <span className={cn("text-[11px] font-black tracking-tight", item.margin >= 0 ? "text-telus-green" : "text-rose-500")}>
-                                {formatCurrency(item.margin)}
+                  {sow.items.map((item, iIdx) => {
+                    const rowKey = `${sow.originalSowName}-${item.type}`;
+                    const isExpanded = !!expandedItems[rowKey];
+                    return (
+                      <React.Fragment key={rowKey}>
+                        <tr 
+                          onClick={() => toggleItem(rowKey)}
+                          className="hover:bg-bg-primary/50 transition-colors group cursor-pointer border-b border-border-primary/20"
+                        >
+                          <td className="px-4 py-3">
+                            <div className="flex items-center space-x-2">
+                              <span className="p-0.5 rounded hover:bg-bg-secondary text-text-secondary/60 transition-colors">
+                                {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                               </span>
+                              <div>
+                                <div className="font-bold text-telus-gray group-hover:text-telus-purple transition-colors text-xs">{item.typeName}</div>
+                                <div className="text-[8px] text-text-secondary/60 font-bold uppercase tracking-widest mt-0.5">{item.count} lines aggregated</div>
+                              </div>
                             </div>
                           </td>
-                          <td className="px-4 py-2 text-right">
-                            <span className={cn(
-                              "text-[11px] font-black px-2 py-0.5 rounded text-[8px] border shadow-sm uppercase tracking-widest",
-                              item.marginPercent > 20 ? "bg-telus-green/10 text-telus-green border-telus-green/20" : "bg-amber-500/10 text-amber-400 border-amber-500/20"
-                            )}>
-                              {item.marginPercent.toFixed(1)}%
-                            </span>
+                          <td className="px-4 py-3 text-right">
+                            <span className="font-black text-telus-gray text-xs tracking-tight">{formatCurrency(item.revenue)}</span>
+                            {item.type === 'MS' && <span className="text-[8px] text-text-secondary/40 ml-1 font-bold uppercase tracking-wider">/mo</span>}
                           </td>
-                        </>
-                      )}
-                    </tr>
-                  ))}
+                          {showVendorFinancials && (
+                            <>
+                              <td className="px-4 py-3 text-right">
+                                <span className="font-bold text-text-secondary/80 text-[11px] tracking-tight">{formatCurrency(item.cost)}</span>
+                                {item.type === 'MS' && <span className="text-[9px] text-text-secondary/40 ml-1 font-bold uppercase tracking-wider">/mo</span>}
+                              </td>
+                              <td className="px-4 py-3 text-right">
+                                <div className="flex items-center justify-end space-x-1.5">
+                                  {item.margin >= 0 ? <TrendingUp className="w-3.5 h-3.5 text-telus-green" /> : <TrendingDown className="w-3.5 h-3.5 text-rose-500" />}
+                                  <span className={cn("text-[11px] font-black tracking-tight", item.margin >= 0 ? "text-telus-green" : "text-rose-500")}>
+                                    {formatCurrency(item.margin)}
+                                  </span>
+                                </div>
+                              </td>
+                              <td className="px-4 py-3 text-right">
+                                <span className={cn(
+                                  "text-[11px] font-black px-2 py-0.5 rounded text-[8px] border shadow-sm uppercase tracking-widest",
+                                  item.marginPercent > 20 ? "bg-telus-green/10 text-telus-green border-telus-green/20" : "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                                )}>
+                                  {item.marginPercent.toFixed(1)}%
+                                </span>
+                              </td>
+                            </>
+                          )}
+                        </tr>
+                        {isExpanded && item.detailLines?.map((line, lIdx) => (
+                          <tr key={`${rowKey}-line-${lIdx}`} className="bg-bg-primary/20 hover:bg-bg-primary/40 transition-colors border-b border-border-primary/10">
+                            <td className="px-4 py-2 pl-12">
+                              <div className="flex items-center space-x-2">
+                                <span className="text-text-secondary/50 text-xs font-bold">—</span>
+                                <span className="text-text-secondary text-[11px] font-semibold truncate max-w-[200px]" title={line.name}>
+                                  {line.name}
+                                </span>
+                                <span className="inline-flex items-center justify-center px-1 py-0.5 rounded bg-bg-primary text-text-secondary text-[7px] font-bold border border-border-primary shrink-0" title="Quantity">
+                                  Qty: {line.qty}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="px-4 py-2 text-right font-medium text-text-secondary text-[10px]">
+                              {line.revenue > 0 ? formatCurrency(line.revenue) : '-'}
+                              {item.type === 'MS' && line.revenue > 0 && <span className="text-[8px] text-text-secondary/40 ml-0.5">/mo</span>}
+                            </td>
+                            {showVendorFinancials && (
+                              <>
+                                <td className="px-4 py-2 text-right font-medium text-text-secondary/70 text-[10px]">
+                                  {line.cost > 0 ? formatCurrency(line.cost) : '-'}
+                                  {item.type === 'MS' && line.cost > 0 && <span className="text-[8px] text-text-secondary/40 ml-0.5">/mo</span>}
+                                </td>
+                                <td className="px-4 py-2 text-right font-semibold text-[10px]">
+                                  <span className={line.margin >= 0 ? "text-telus-green" : "text-rose-500"}>
+                                    {line.margin !== 0 ? formatCurrency(line.margin) : '-'}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-2 text-right">
+                                  {line.revenue > 0 && line.margin !== 0 ? (
+                                    <span className={cn(
+                                      "text-[9px] font-bold px-1.5 py-0.2 rounded border",
+                                      line.marginPercent > 20 ? "bg-telus-green/5 text-telus-green border-telus-green/10" : "bg-amber-500/5 text-amber-400 border-amber-500/10"
+                                    )}>
+                                      {line.marginPercent.toFixed(1)}%
+                                    </span>
+                                  ) : <span className="text-text-secondary/30 text-[9px]">-</span>}
+                                </td>
+                              </>
+                            )}
+                          </tr>
+                        ))}
+                      </React.Fragment>
+                    );
+                  })}
                   <tr className="bg-bg-primary font-black border-t-2 border-border-primary">
                     <td className="px-4 py-3 text-[10px] text-telus-gray uppercase tracking-widest">Total for {sow.sowName}</td>
                     <td className="px-4 py-3 text-sm text-telus-purple text-right tracking-tight">{formatCurrency(sow.totalRevenue)}</td>
